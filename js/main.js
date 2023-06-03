@@ -7,7 +7,7 @@ class GraphicObject {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-    }1
+    }
     get name() {
         return this.name;
     }
