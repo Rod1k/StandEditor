@@ -6,3 +6,40 @@
 body {
     background-color: #ececec;
 }
+#workspace-canvas {
+    background-color: #ffffff;
+}
+
+.editor-header {
+    width: 100%;
+    background-color: rgb(68, 0, 204);
+    height: 75px;
+}
+
+#graphic-objects-list {
+    list-style: none;
+    display: flex;
+    flex-direction: row;
+}
+#graphic-objects-list li {
+    width: 75px;
+    height: 75px;
+    padding: 0;
+    margin: 0;
+}
+#graphic-objects-list a {
+    display: flex;
+    width: 75px;
+    height: 75px;
+    margin: 0;
+    padding: 0;
+    align-items: center;
+    justify-content: center;
+}
+#graphic-objects-list img {
+    height: 50px;
+}
+#graphic-objects-list a:hover {
+    background-color: #fff;
+    cursor: pointer;
+}

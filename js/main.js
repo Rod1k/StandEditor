@@ -1,78 +1,74 @@
-class GraphicObject {
-    x;
-    y;
-    width;
-    height;
-    name;
-    constructor(x, y) {
-        this.x = x;
-        this.y = y;
-    }
-    get name() {
-        return this.name;
-    }
-    draw() {
-        app.ctx.fillStyle = '#000';
-        app.ctx.fillRect(this.x - this.width/2, this.y - this.height/2, this.width, this.height);
-    }
-    rename() { }
-    move() { }
-    delete() { }
-    showInfo() {
-        alert(this.name);
-    }
-}
+import { Chair } from "./GraphicObject.js";
 
-class Chair extends GraphicObject {
-
-    constructor(x, y, name) {
-        super(x, y);
-        this.name = name;
-        this.width = 150;
-        this.height = 150;
-        this.draw();
-    }
-
-
-}
-
-class WorkSpace {
+class StandEditor {
     canvas;
     ctx;
-    m_x; // Координаты мыши X
-    m_y; // Координаты мыши Y
-    objectList = []; // Массив графических элементов 
-    constructor() {
+    chairBottom;
+    graphicObjectslist = []; // Массив графических обьектов 
+    createObjectt = null;
+    selectObject = null;
+
+    constructor(graphicObjectslist) {
+        if (graphicObjectslist === undefined) {
+            console.log("Данных для подгрузки нет");
+        } else {
+            this.graphicObjectslist = graphicObjectslist;
+        }
+
+    }
+
+    draw() {
+        if (this.graphicObjectslist.length !== 0) {
+            this.ctx.clearRect(0, 0, 500, 400);
+            this.graphicObjectslist.forEach(object => {
+                object.draw(this.ctx);
+            });
+            console.log('Данные подгружены');
+        }
+    }
+
+    clickOnCanvas() {
+        if (this.createObjectt != null) {
+            this.graphicObjectslist.push(this.createObjectt(this.m_x, this.m_y));
+            this.draw();
+        }
+        if (this.selectObject == true) {
+            this.graphicObjectslist.forEach(graphicObject => {
+                if ((this.m_x >= graphicObject.x) &&
+                    (this.m_y >= graphicObject.y) &&
+                    (this.m_x <= graphicObject.width + graphicObject.x) &&
+                    (this.m_y <= graphicObject.height + graphicObject.y)
+                );
+            });
+        }
+        this.createObjectt = null;
+        this.selectObject = true;
+    }
+
+    choseObject() {
+
+    }
+
+    start() {
         this.canvas = document.getElementById('workspace-canvas');
         this.ctx = this.canvas.getContext('2d');
-    }
 
-    choseDrawObject(type) {
-        this.typeObject = type;
-        const AddObject = () => { this.addObject(this.typeObject); }
-        this.canvas.addEventListener('mousedown', AddObject);
-        this.canvas.addEventListener('mouseup', () => {
-            this.canvas.removeEventListener('mousedown', AddObject)
-        })
-    }
-
-    addObject(type) {
-        if (type == 'chair') {
-            this.objectList.push(new Chair(this.m_x, this.m_y));
-        }
-        if (type == 'stand') {
-
-        }
-
-
-    }
-    start() {
         this.canvas.addEventListener('mousemove', (e) => {
             this.m_x = e.pageX - e.target.offsetLeft;
             this.m_y = e.pageY - e.target.offsetTop;
         });
-    }
-}
+        this.canvas.addEventListener('click', () => {
+            this.clickOnCanvas();
+        })
 
-const app = new WorkSpace();
-app.start();
+        this.chairButton = document.getElementById('chairButton');
+        this.tableButton = document.getElementById('tableButton');
+        this.chairButton.addEventListener('click', () => {
+            this.createObjectt = (x, y) => new Chair(x, y);
+        })
+        console.log('Приложение запущено');
+    }
+
+}
+const app = new StandEditor();
+app.start()
