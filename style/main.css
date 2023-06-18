@@ -15,6 +15,9 @@ body {
     background-color: rgb(68, 0, 204);
     height: 75px;
 }
+.editor-header__menu {
+    display: flex;
+}
 
 #graphic-objects-list {
     list-style: none;

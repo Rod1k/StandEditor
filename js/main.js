@@ -3,12 +3,14 @@ import { Chair } from "./GraphicObject.js";
 class StandEditor {
     canvas;
     ctx;
-    chairBottom;
     graphicObjectslist = []; // Массив графических обьектов 
-    createObjectt = null;
-    selectObject = null;
-    canvasWidth;
-    canvasHeight;
+    createObject = null;  // Статус создания обьекта
+    selectObject = null;  // Выбранный обьект
+    holdObject = null;  // Удерживаемый обьект
+    canvasWidth; // Ширина canvas
+    canvasHeight;  // Высота canvas
+    gridLine = 50;
+    stepGrid = 50; // Шаг сетки в px 
 
     constructor(graphicObjectslist) {
         if (graphicObjectslist === undefined) {
@@ -18,48 +20,68 @@ class StandEditor {
         }
     }
 
+    // Полная отрисовка всех элементов на канвасе (предварительно очищает его)
     draw() {
+        this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+        this.grid();
         if (this.graphicObjectslist.length !== 0) {
-            this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
             this.graphicObjectslist.forEach(object => {
                 object.draw(this.ctx);
             });
+        } else {
+            
         }
     }
 
+    // Сетка разметки
+    grid() {
+        if (this.stepGrid == 0) {
+            this.stepGrid = 50;
+        }
+        this.gridLine = this.stepGrid;
+        this.ctx.strokeStyle = "#ececec";
+        this.ctx.lineWidth = "1"; //толщина линии
+        
+        while (this.gridLine <= this.canvasWidth) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(this.gridLine, 0);
+            this.ctx.lineTo(this.gridLine, this.canvasHeight);
+            this.ctx.moveTo(0, this.gridLine);
+            this.ctx.lineTo(this.canvasWidth, this.gridLine);
+            this.gridLine += this.stepGrid;
+            this.ctx.stroke(); // обводка линии
+        }
+    }
+
+    // Высчитывание размера canvas
     sizeCanvas() {
         this.canvasWidth = window.innerWidth;
         this.canvasHeight = window.innerHeight - 85;
         this.canvas.width = this.canvasWidth;
         this.canvas.height = this.canvasHeight;
-
-        console.log(this.canvasWidth);
     }
 
-
-    // Одиночное нажатие на канвас
+    // Одиночное нажатие на Canvas
     clickOnCanvas() {
-        if (this.createObjectt != null) {
-            this.graphicObjectslist.push(this.createObjectt(this.m_x, this.m_y));
+        // Создание нового обьекта
+        if (this.createObject != null) {
+            this.graphicObjectslist.push(this.createObject(this.m_x, this.m_y));
+            // Сброс выбраного обьекта при создании нового
             if (this.selectObject != null) {
                 this.selectObject.chosen();
                 this.selectObject = null;
             }
             this.draw();
         }
-
-        if (this.createObjectt == null) {
+        // Проверка на попадание в существующий обьект на canvas
+        if (this.createObject == null) {
             if (this.selectObject == null) {
                 this.graphicObjectslist.forEach(graphicObject => {
-                    if ((this.m_x >= graphicObject.x) &&
-                        (this.m_y >= graphicObject.y) &&
-                        (this.m_x <= graphicObject.width + graphicObject.x) &&
-                        (this.m_y <= graphicObject.height + graphicObject.y)
-                    ) {
+                    if (graphicObject.checkChose(this.m_x, this.m_y)) {
                         this.selectObject = graphicObject;
                         this.selectObject.chosen();
                         this.draw();
-                    };
+                    }
                 });
             } else if (this.selectObject != null) {
                 this.selectObject.chosen();
@@ -67,52 +89,101 @@ class StandEditor {
                 this.draw();
             }
         }
-        this.createObjectt = null;
+        this.createObject = null;
     }
 
-    moveObject() {
+    mouseDownOnCanvas() {
+        if ((this.selectObject != null) && (this.selectObject.checkChose(this.m_x, this.m_y))
+        ) {
+            this.holdObject = this.selectObject;
+        }
+    }
 
+    mouseUpOnCanvas() {
+        this.holdObject = null;
+    }
+
+    // Отслеживание положения мыши на Canvas
+    mouseMoveOnCanvas(e) {
+        this.m_x = e.pageX - e.target.offsetLeft;
+        this.m_y = e.pageY - e.target.offsetTop;
+        if (this.holdObject != null) {
+            this.holdObject.move(this.m_x, this.m_y);
+            this.draw();
+        }
+    }
+
+    delKey() {
+        if (this.selectObject != null) {
+            this.deleteObject();
+        }
+    }
+
+    deleteObject() {
+        this.index = this.graphicObjectslist.indexOf(this.selectObject);
+        this.graphicObjectslist.splice(this.index, 1);
+        this.draw();
+        this.selectObject = null;
     }
 
     start() {
+        // Настройки canvas
         this.canvas = document.getElementById('workspace-canvas');
-
-        this.canvasWidth = window.innerWidth;
-        this.canvasHeight = window.innerHeight - 85;
-        this.canvas.width = this.canvasWidth;
-        this.canvas.height = this.canvasHeight;
-
-        window.onresize = () => {
-            this.canvasWidth = window.innerWidth;
-            this.canvasHeight = window.innerHeight - 85;
-            this.canvas.width = this.canvasWidth;
-            this.canvas.height = this.canvasHeight;
-            this.draw();
-        };
-
         this.ctx = this.canvas.getContext('2d');
+        this.sizeCanvas();
 
+        // Настройки событий
         this.canvas.addEventListener('mousemove', (e) => {
-            this.m_x = e.pageX - e.target.offsetLeft;
-            this.m_y = e.pageY - e.target.offsetTop;
+            this.mouseMoveOnCanvas(e);
         });
 
         this.canvas.addEventListener('click', () => {
             this.clickOnCanvas();
         })
 
-        this.canvas.addEventListener('dblclick', () => {
-            this.choseObject();
+        this.canvas.addEventListener('mousedown', () => {
+            this.mouseDownOnCanvas();
         })
 
+        this.canvas.addEventListener('mouseup', () => {
+            this.mouseUpOnCanvas();
+        })
+
+        document.addEventListener('keyup', (e) => {
+            if (e.code == 'Delete') {
+                this.delKey();
+            }
+            if (e.code == 'ShiftLeft') {
+
+            }
+        })
+
+        // Настройки меню
         this.chairButton = document.getElementById('chairButton');
         this.tableButton = document.getElementById('tableButton');
+        this.inputSteGrid = document.getElementById('stepGrid');
 
-        this.chairButton.addEventListener('click', () => {
-            this.createObjectt = (x, y) => new Chair(x, y);
+        this.inputSteGrid.addEventListener('input', () => {
+            this.stepGrid = Number(this.inputSteGrid.value);
+            this.draw();
         })
 
+        this.chairButton.addEventListener('click', () => {
+            this.createObject = (x, y) => new Chair(x, y);
+        })
+        this.tableButton.addEventListener('click', () => {
+            this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+        })
+
+        window.onresize = () => {
+            this.sizeCanvas();
+            this.draw();
+        };
+        
+        this.draw();
+
         console.log('Приложение запущено');
+
     }
 
 }
