@@ -12,12 +12,14 @@ class StandEditor {
     canvasHeight;  // Высота canvas
     gridLine = 50;
     stepGrid = 50; // Шаг сетки в px 
-    startPointStand;
+    startDrawStand; // Проверка на рисование стнеда
     createStand = false;
-    stand;
-    startStandPoint;
-    l_s_x;
-    l_s_y;
+    stand; // Стенд
+    startStandPoint; // Начальная точка для отрисовки стенда
+    l_s_x; // Последняя координата x при рисовании стенда
+    l_s_y; // Последняя координата y при рисовании стенда
+
+    shiftDown = false; // Зажатый шифт
 
     constructor(graphicObjectslist) {
         if (graphicObjectslist === undefined) {
@@ -97,16 +99,21 @@ class StandEditor {
             }
         }
         // Создание стенда
-        if (this.startPointStand == true) {
-            this.stand = new standObject(this.m_x, this.m_y);
-            this.startStandPoint = [this.m_x, this.m_y];
-            this.stand.createStartPoint(this.ctx);
-            this.startPointStand = false;
-            this.createStand = true;
-        }
         if (this.createStand) {
             this.stand.addCoordinates(this.m_x, this.m_y);
+            this.stand.create();
+            if (this.stand.created()) {
+                this.createStand = false;
+            }
         }
+        if (this.startDrawStand == true) {
+            this.stand = new standObject(this.m_x, this.m_y, this.ctx);
+            this.startStandPoint = [this.m_x, this.m_y];
+            this.stand.createStartPoint();
+            this.startDrawStand = false;
+            this.createStand = true;
+        }
+
         this.createObject = null;
     }
 
@@ -122,14 +129,11 @@ class StandEditor {
 
         }
         if (this.createStand) {
-            [this.l_s_x, this.l_s_y] = this.stand.lastCoodinates();
+            [this.l_s_x, this.l_s_y] = this.stand.lastCoodinates(); // Последнияя точка при рисовании стенда
             this.draw();
-            this.stand.create(this.ctx);
-            this.stand.createStartPoint(this.ctx);
-            // this.ctx.beginPath();
-            // this.ctx.moveTo(this.l_s_x,this.l_s_y);
-            // this.ctx.lineTo(this.m_x, this.m_y);
-            // this.ctx.stroke();
+            this.stand.create();
+            this.stand.createStartPoint();
+            this.stand.drawLine(this.m_x, this.m_y);
         }
     }
 
@@ -187,7 +191,13 @@ class StandEditor {
                 this.delKey();
             }
             if (e.code == 'ShiftLeft') {
+                shiftDown = false;
+            }
+        })
 
+        document.addEventListener('keydown', (e) => {
+            if (e.code == 'ShiftLeft') {
+                shiftDown = true;
             }
         })
 
@@ -198,7 +208,7 @@ class StandEditor {
         this.inputSteGrid = document.getElementById('stepGrid');
 
         this.createStandButton.addEventListener('click', () => {
-            this.startPointStand = true;
+            this.startDrawStand = true;
         })
 
         this.inputSteGrid.addEventListener('input', () => {
