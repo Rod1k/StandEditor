@@ -20,6 +20,8 @@ class StandEditor {
     l_s_y; // Последняя координата y при рисовании стенда
 
     shiftDown = false; // Зажатый шифт
+    ctrltDown = false; // Зажатый ctrl
+    keyZ = false // зажатая клавиша Z
 
     constructor(graphicObjectslist) {
         if (graphicObjectslist === undefined) {
@@ -121,14 +123,24 @@ class StandEditor {
     mouseMoveOnCanvas(e) {
         this.m_x = e.pageX - e.target.offsetLeft;
         this.m_y = e.pageY - e.target.offsetTop;
-        if (this.holdObject != null) {
-            this.holdObject.move(this.m_x, this.m_y);
+
+        if (this.holdObject != null) {  // Если перетаскивается обьект
+            if (this.shiftDown) {
+                this.holdObject.moveHorizontal(this.m_x);
+            }
+            if (this.ctrltDown) {
+                this.holdObject.moveVertical(this.m_y);
+            }
+            if (this.keyZ) {
+                this.holdObject.moveForGrid(this.m_x, this.m_y, this.stepGrid);
+            }
+            if (!((this.shiftDown) || (this.ctrltDown) || (this.keyZ))) {
+                this.holdObject.move(this.m_x, this.m_y);
+            }
             this.draw();
         }
-        if (this.stand != null) {
 
-        }
-        if (this.createStand) {
+        if (this.createStand) {  // Если идет создание стенда
             [this.l_s_x, this.l_s_y] = this.stand.lastCoodinates(); // Последнияя точка при рисовании стенда
             this.draw();
             this.stand.create();
@@ -191,16 +203,28 @@ class StandEditor {
                 this.delKey();
             }
             if (e.code == 'ShiftLeft') {
-                shiftDown = false;
+                this.shiftDown = false;
+            }
+            if (e.code == 'ControlLeft') {
+                this.ctrltDown = false;
+            }
+            if (e.code == 'KeyZ') {
+                this.keyZ = false;
             }
         })
 
         document.addEventListener('keydown', (e) => {
             if (e.code == 'ShiftLeft') {
-                shiftDown = true;
+                this.shiftDown = true;
+            }
+            if (e.code == 'ControlLeft') {
+                this.ctrltDown = true;
+            }
+            if (e.code == 'KeyZ') {
+                this.keyZ = true;
             }
         })
-
+         
         // Настройки меню
         this.createStandButton = document.getElementById('createStandButton');
         this.chairButton = document.getElementById('chairButton');

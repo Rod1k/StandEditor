@@ -23,6 +23,17 @@ class GraphicObject {
         this.y = y - this.height / 2;
     }
 
+    moveHorizontal(x) {
+        this.x = x - this.height / 2;
+    }
+    moveVertical(y) {
+        this.y = y - this.height / 2;
+    }
+    moveForGrid(x, y, step) {
+        this.x = Math.trunc( x / step) * step;
+        this.y = Math.trunc( y / step) * step;
+    }
+
     checkChose(x, y) {
         if ((x >= this.x) && (y >= this.y) && (x <= this.width + this.x) && (y <= this.height + this.y)) {
             return true
