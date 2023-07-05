@@ -1,5 +1,6 @@
 import { Chair } from "./GraphicObject.js";
 import { standObject } from "./standObject.js";
+import { wallObject } from "./wallObject.js";
 
 class StandEditor {
     canvas;
@@ -23,6 +24,8 @@ class StandEditor {
     ctrltDown = false; // Зажатый ctrl
     keyZ = false // зажатая клавиша Z
 
+    editorRightPanel;
+
     constructor(graphicObjectslist) {
         if (graphicObjectslist === undefined) {
             console.log("Данных для подгрузки нет");
@@ -35,12 +38,15 @@ class StandEditor {
     draw() {
         this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
         this.grid();
-        if (this.graphicObjectslist.length !== 0) {
+        if (this.stand != null) { // Если есть стенд
+            if (this.stand.created()) {
+                this.stand.draw();
+            }
+        }
+        if (this.graphicObjectslist.length !== 0) {  // Проверяет есть ли какие обьекты в памяти
             this.graphicObjectslist.forEach(object => {
                 object.draw(this.ctx);
             });
-        } else {
-
         }
     }
 
@@ -86,29 +92,41 @@ class StandEditor {
         }
         // Проверка на попадание в существующий обьект на canvas
         if (this.createObject == null) {
+            if (this.selectObject != null) {
+                this.selectObject.chosen();
+                this.selectObject = null;
+            }
             if (this.selectObject == null) {
                 this.graphicObjectslist.forEach(graphicObject => {
                     if (graphicObject.checkChose(this.m_x, this.m_y)) {
                         this.selectObject = graphicObject;
                         this.selectObject.chosen();
-                        this.draw();
+                        this.selectObject.showInfo(this.editorRightPanel);
                     }
                 });
-            } else if (this.selectObject != null) {
-                this.selectObject.chosen();
-                this.selectObject = null;
+            }
+            this.draw();
+        }
+        // Создание стенда
+        if (this.createStand) {  // Прорисовка стенда
+            if (this.shiftDown) {
+                if (Math.abs((this.l_s_x - this.m_x)) > Math.abs((this.l_s_y - this.m_y))) {
+                    this.stand.addCoordinates(this.m_x, this.l_s_y);
+                }
+                if (Math.abs((this.l_s_x - this.m_x)) < Math.abs((this.l_s_y - this.m_y))) {
+                    this.stand.addCoordinates(this.l_s_x, this.m_y);
+                }
+            } else {
+                this.stand.addCoordinates(this.m_x, this.m_y);
+            }
+
+            this.stand.create();
+            if (this.stand.created()) {  // Если стенд уже завершен
+                this.createStand = false;
                 this.draw();
             }
         }
-        // Создание стенда
-        if (this.createStand) {
-            this.stand.addCoordinates(this.m_x, this.m_y);
-            this.stand.create();
-            if (this.stand.created()) {
-                this.createStand = false;
-            }
-        }
-        if (this.startDrawStand == true) {
+        if (this.startDrawStand == true) {  // Начало создания стенда ( начальная координата )
             this.stand = new standObject(this.m_x, this.m_y, this.ctx);
             this.startStandPoint = [this.m_x, this.m_y];
             this.stand.createStartPoint();
@@ -126,16 +144,16 @@ class StandEditor {
 
         if (this.holdObject != null) {  // Если перетаскивается обьект
             if (this.shiftDown) {
-                this.holdObject.moveHorizontal(this.m_x);
+                this.selectObject.moveHorizontal(this.m_x);
             }
             if (this.ctrltDown) {
-                this.holdObject.moveVertical(this.m_y);
+                this.selectObject.moveVertical(this.m_y);
             }
             if (this.keyZ) {
-                this.holdObject.moveForGrid(this.m_x, this.m_y, this.stepGrid);
+                this.selectObject.moveForGrid(this.m_x, this.m_y, this.stepGrid);
             }
             if (!((this.shiftDown) || (this.ctrltDown) || (this.keyZ))) {
-                this.holdObject.move(this.m_x, this.m_y);
+                this.selectObject.move(this.m_x, this.m_y);
             }
             this.draw();
         }
@@ -145,14 +163,28 @@ class StandEditor {
             this.draw();
             this.stand.create();
             this.stand.createStartPoint();
-            this.stand.drawLine(this.m_x, this.m_y);
+            // Зажатый шифт
+            if (this.shiftDown) {
+                if (Math.abs((this.l_s_x - this.m_x)) > Math.abs((this.l_s_y - this.m_y))) {
+                    this.stand.drawLine(this.m_x, this.l_s_y);
+                }
+                if (Math.abs((this.l_s_x - this.m_x)) < Math.abs((this.l_s_y - this.m_y))) {
+                    this.stand.drawLine(this.l_s_x, this.m_y);
+                }
+                // Угол 45
+                if (Math.abs(Math.abs((this.l_s_x - this.m_x)) - Math.abs((this.l_s_y - this.m_y))) < 15) {
+                    
+                }
+            } else {
+                this.stand.drawLine(this.m_x, this.m_y);
+            }
+
         }
     }
 
     mouseDownOnCanvas() {
-        if ((this.selectObject != null) && (this.selectObject.checkChose(this.m_x, this.m_y))
-        ) {
-            this.holdObject = this.selectObject;
+        if ((this.selectObject != null) && (this.selectObject.checkChose(this.m_x, this.m_y))) {
+            this.holdObject = true;
         }
     }
 
@@ -164,8 +196,8 @@ class StandEditor {
     deleteObject() {
         this.index = this.graphicObjectslist.indexOf(this.selectObject);
         this.graphicObjectslist.splice(this.index, 1);
-        this.draw();
         this.selectObject = null;
+        this.draw();
     }
 
     // Методы клавишь
@@ -185,15 +217,12 @@ class StandEditor {
         this.canvas.addEventListener('mousemove', (e) => {
             this.mouseMoveOnCanvas(e);
         });
-
         this.canvas.addEventListener('click', () => {
             this.clickOnCanvas();
         })
-
         this.canvas.addEventListener('mousedown', () => {
             this.mouseDownOnCanvas();
         })
-
         this.canvas.addEventListener('mouseup', () => {
             this.mouseUpOnCanvas();
         })
@@ -224,12 +253,13 @@ class StandEditor {
                 this.keyZ = true;
             }
         })
-         
+
         // Настройки меню
         this.createStandButton = document.getElementById('createStandButton');
         this.chairButton = document.getElementById('chairButton');
         this.tableButton = document.getElementById('tableButton');
         this.inputSteGrid = document.getElementById('stepGrid');
+        this.editorRightPanel = document.getElementById('editor-right-panel');
 
         this.createStandButton.addEventListener('click', () => {
             this.startDrawStand = true;
@@ -253,6 +283,9 @@ class StandEditor {
         };
 
         this.draw();
+
+        this.wall = new wallObject();
+        this.wall.draw(6, 6, this.ctx);
 
         console.log('Приложение запущено');
 
