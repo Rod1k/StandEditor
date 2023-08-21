@@ -14,10 +14,6 @@ class wallObject {
         ctx.lineTo(100, 100);
         ctx.stroke();
     }
-
-    
-
-
 }
 
 export { wallObject }

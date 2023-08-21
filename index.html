@@ -10,29 +10,67 @@
 </head>
 
 <body>
-    <div class="editor-header">
-        <div class="editor-header__menu">
-            <ul id="graphic-objects-list">
-                <li><a id="createStandButton"><img src="media/stand-icon.svg" alt=""></a></li>
-                <li><a id="chairButton"><img src="media/chair-icon.svg" alt=""></a></li>
-                <li><a id="tableButton"><img src="media/table-icon.svg" alt=""></a></li>
-                <li><a id="standButton">3</a></li>
-            </ul>
-            <div class="stepinput">
-                <label for="">Шаг сетки</label>
-                <input id="stepGrid" min="0" value="50" type="number">
+    <div id="stand-editor">
+        <div class="editor-header">
+            <div class="editor-header__menu">
+                <ul id="graphic-objects-list">
+                    <li><a id="createStandButton"><img src="media/drawstand-icon.svg" alt=""></a></li>
+                    <li><a id="createRectStandButton"><img src="media/stand-icon.svg" alt=""></a></li>
+                    <li id="chairButtons"><a><img src="media/chair-icon.svg" alt=""></a>
+                        <ul>
+                            <li><a class="chairButton" data-id="1"><img src="media/chair.svg" alt="">
+                                    <p>Стул 1</p>
+                                </a></li>
+                            <li><a class="chairButton" data-id="2"><img src="media/chair2.svg" alt="">
+                                    <p>Стул 2</p>
+                                </a></li>
+                            <li><a class="chairButton" data-id="3"><img src="media/chair3.svg" alt="">
+                                    <p>Стул 3</p>
+                                </a></li>
+                        </ul>
+                    </li>
+                    <li><a id="tableButton"><img src="media/table-icon.svg" alt=""></a></li>
+                    <li><a id="rulerButton"><img src="media/ruler-icon.svg" alt=""></a></li>
+                </ul>
+                <div class="stepinput">
+                    <label for="">Шаг сетки</label>
+                    <input id="stepGrid" min="0" value="25" type="number">
+                </div>
+            </div>
+        </div>
+        <div class="editor-workspace">
+            <canvas id="workspace-canvas" width="500" height="400"></canvas>
+        </div>
+        <div id="editor-right-panel">
+            <div class="info">
+                <p class="coordinates-object">123</p>
+            </div>
+        </div>
+
+        <div id="editor-rect-stand">
+            <div class="editor-block">
+                <h2>Задайте размеры стенда</h2>
+                <div class="block-input">
+                    <label for="">Ширина</label>
+                    <input id="inputStandWidth" type="number" min="0">
+                    <label for="">Высота</label>
+                    <input id="inputStandHeight" type="number" min="0">
+                </div>
+                <button id="creatRectStand">Создать стенд</button>
+            </div>
+        </div>
+
+        <div id="chose-graphic-object">
+            <div id="chair1">
+                <img src="../media/chair-icon.svg" alt="">
+                <button onclick="addChair(1)">Добавить</button>
+            </div>
+            <div id="chair2">
+                <img src="../media/chair-icon.svg" alt="">
+                <button>Добавить</button>
             </div>
         </div>
     </div>
-    <div class="editor-workspace">
-        <canvas id="workspace-canvas" width="500" height="400"></canvas>
-    </div>
-    <div id="editor-right-panel">
-        <div class="info">
-            <p class="coordinates-object">123</p>
-        </div>
-    </div>
-
 </body>
 <script type="module" src="js/main.js"></script>
 

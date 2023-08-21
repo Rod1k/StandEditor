@@ -69,7 +69,16 @@ class standObject {
         this.coordinates.forEach(coordinate => {
             this.ctx.lineTo(coordinate[0], coordinate[1]);
         });
+        this.ctx.lineTo(this.start_x, this.start_y);
+        this.ctx.strokeStyle = '#000';
+        this.ctx.fillStyle = '#fff';
+        this.ctx.lineWidth = 1;
+        this.ctx.stroke();
+        this.ctx.closePath();
         this.ctx.fill();
+    }
+
+    drawGrid() {
     }
 
     drawSizeLine(x, y) {

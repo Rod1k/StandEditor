@@ -5,17 +5,31 @@ class GraphicObject {
     height = 50;
     img = new Image();
     chose = false;
+    degrees = 0;
     constructor(x, y) {
         this.x = x - this.width / 2;
         this.y = y - this.height / 2;
 
     }
-    draw(ctx) {
-        ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
+    // draw(ctx) {
+    //     ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
+    //     if (this.chose) {
+    //         ctx.strokeStyle = "green";
+    //         ctx.strokeRect(this.x, this.y, this.width, this.height);
+    //     }
+    // }
+
+    draw(ctx, rotate) {
+        ctx.save();
+        ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+        ctx.rotate(this.degrees * Math.PI / 180);
+        ctx.drawImage(this.img, -this.width / 2, -this.height / 2, this.width, this.height);
+        ctx.restore();
         if (this.chose) {
             ctx.strokeStyle = "green";
             ctx.strokeRect(this.x, this.y, this.width, this.height);
         }
+
     }
 
     move(x, y) {
@@ -30,10 +44,18 @@ class GraphicObject {
     moveVertical(y) {
         this.y = y - this.height / 2;
     }
-    
+
     moveForGrid(x, y, step) {
-        this.x = Math.trunc( x / step) * step;
-        this.y = Math.trunc( y / step) * step;
+        this.x = Math.trunc(x / step) * step;
+        this.y = Math.trunc(y / step) * step;
+    }
+
+    moveForGridinStand(x, y, stand) {
+        this.step = stand.stepGrid; // Ширина шага
+        this.stand_x = stand.start_x; // Начальная координата x
+        this.stand_y = stand.start_y; // Начальная координата y
+        this.x = (Math.trunc((x - this.stand_x) / this.step) * this.step) + this.stand_x;
+        this.y = (Math.trunc((y - this.stand_y) / this.step) * this.step) + this.stand_y;
     }
 
     checkChose(x, y) {
@@ -54,33 +76,31 @@ class GraphicObject {
     showInfo(panel) {
         panel.style.display = "block";
         panel.getElementsByClassName('coordinates-object')[0].innerHTML = this.x;
-        console.log(this.x);
     }
     hiddenInfo(panel) {
         panel.style.display = "none";
     }
 
-    rotate() {
-        this.ctx.save();
-        // Сдвигаем все адресованные пиксели на указанные значения
-        this.ctx.translate(this.canvas.width / 2, this.canvas.height / 2);
-        // Поворачиваем на `degrees` наш градус
-        this.ctx.rotate(45 * Math.PI / 180);
-        // Рисуем повернутую картинку
-        this.ctx.drawImage(this.img, 50, 50, 50, 50);
-        // Восстанавливаем настройки на момент когда делали `ctx.save`
-        // то бишь до `ctx.translate` и `ctx.rotate`. Рисунок при этом сохраняется.
-        this.ctx.restore();
+    rotate(degrees) {
+        this.degrees += degrees;
     }
 
 }
 
 class Chair extends GraphicObject {
-    constructor(x, y) {
+    constructor(x, y, type) {
         super(x, y);
-        this.img.src = "../media/chair-icon.svg";
+        if (type == 1) {
+            this.img.src = "../media/chair.svg";
+        }
+        if (type == 2) {
+            this.img.src = "../media/chair2.svg";
+        }
+        if (type == 3) {
+            this.img.src = "../media/chair3.svg";
+        }
+        
     }
-    
 }
 
 export { Chair }

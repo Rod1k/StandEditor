@@ -1,6 +1,8 @@
 import { Chair } from "./GraphicObject.js";
 import { standObject } from "./standObject.js";
+import { standRectObject } from "./standRectObject.js";
 import { wallObject } from "./wallObject.js";
+import { rulerObject } from "./rulerObject.js";
 
 class StandEditor {
     canvas;
@@ -9,16 +11,20 @@ class StandEditor {
     createObject = null;  // Статус создания обьекта
     selectObject = null;  // Выбранный обьект
     holdObject = null;  // Удерживаемый обьект
+    rulerObject = null // Выбрана ли линейка
     canvasWidth; // Ширина canvas
     canvasHeight;  // Высота canvas
-    gridLine = 50;
-    stepGrid = 50; // Шаг сетки в px 
+    gridLine = 25;
+    stepGrid = 25; // Шаг сетки в px 
     startDrawStand; // Проверка на рисование стнеда
     createStand = false;
     stand; // Стенд
     startStandPoint; // Начальная точка для отрисовки стенда
     l_s_x; // Последняя координата x при рисовании стенда
     l_s_y; // Последняя координата y при рисовании стенда
+
+    standWidth; // Ширина стенда
+    standHeigh; // высота стенда
 
     shiftDown = false; // Зажатый шифт
     ctrltDown = false; // Зажатый ctrl
@@ -45,7 +51,7 @@ class StandEditor {
         }
         if (this.graphicObjectslist.length !== 0) {  // Проверяет есть ли какие обьекты в памяти
             this.graphicObjectslist.forEach(object => {
-                object.draw(this.ctx);
+                object.draw(this.ctx, 0);
             });
         }
     }
@@ -126,12 +132,26 @@ class StandEditor {
                 this.draw();
             }
         }
-        if (this.startDrawStand == true) {  // Начало создания стенда ( начальная координата )
+        // Начало создания стенда ( начальная координата )
+        if (this.startDrawStand == true) {
             this.stand = new standObject(this.m_x, this.m_y, this.ctx);
             this.startStandPoint = [this.m_x, this.m_y];
             this.stand.createStartPoint();
             this.startDrawStand = false;
             this.createStand = true;
+        }
+
+        // Выбор обьекта для линейки
+        if (this.rulerObject == true) {
+            if (this.ruler) {
+                this.ruler = false;
+                this.rulerObject == false;
+                console.log(this.ruler);
+            } else {
+                this.ruler = new rulerObject(this.m_x, this.m_y, this.ctx);
+                console.log(this.ruler);
+            }
+            
         }
 
         this.createObject = null;
@@ -150,7 +170,14 @@ class StandEditor {
                 this.selectObject.moveVertical(this.m_y);
             }
             if (this.keyZ) {
-                this.selectObject.moveForGrid(this.m_x, this.m_y, this.stepGrid);
+                if (this.stand) {
+                    if (this.stand.mouseInStand(this.m_x, this.m_y)) {
+                        this.selectObject.moveForGridinStand(this.m_x, this.m_y, this.stand);
+                    }
+                } else {
+                    this.selectObject.moveForGrid(this.m_x, this.m_y, this.stepGrid);
+                }
+
             }
             if (!((this.shiftDown) || (this.ctrltDown) || (this.keyZ))) {
                 this.selectObject.move(this.m_x, this.m_y);
@@ -173,12 +200,17 @@ class StandEditor {
                 }
                 // Угол 45
                 if (Math.abs(Math.abs((this.l_s_x - this.m_x)) - Math.abs((this.l_s_y - this.m_y))) < 15) {
-                    
+
                 }
             } else {
                 this.stand.drawLine(this.m_x, this.m_y);
             }
 
+        }
+
+        if (this.ruler) {
+            this.draw();
+            this.ruler.create(this.m_x, this.m_y);
         }
     }
 
@@ -191,7 +223,6 @@ class StandEditor {
     mouseUpOnCanvas() {
         this.holdObject = null;
     }
-
 
     deleteObject() {
         this.index = this.graphicObjectslist.indexOf(this.selectObject);
@@ -240,6 +271,7 @@ class StandEditor {
             if (e.code == 'KeyZ') {
                 this.keyZ = false;
             }
+
         })
 
         document.addEventListener('keydown', (e) => {
@@ -252,17 +284,51 @@ class StandEditor {
             if (e.code == 'KeyZ') {
                 this.keyZ = true;
             }
+
+            if (e.code == 'ArrowLeft') {
+                if (this.selectObject != null) {
+                    this.selectObject.rotate(-1);
+                    this.draw();
+                }
+            }
+            if (e.code == 'ArrowRight') {
+                if (this.selectObject != null) {
+                    this.selectObject.rotate(1);
+                    this.draw();
+                }
+            }
         })
+
 
         // Настройки меню
         this.createStandButton = document.getElementById('createStandButton');
-        this.chairButton = document.getElementById('chairButton');
+        this.createRectStandButton = document.getElementById('createRectStandButton');
+        this.chairButtons = Array.from(document.getElementsByClassName('chairButton'));
         this.tableButton = document.getElementById('tableButton');
+        this.rulerButton = document.getElementById('rulerButton');
         this.inputSteGrid = document.getElementById('stepGrid');
         this.editorRightPanel = document.getElementById('editor-right-panel');
+        this.editorRectStand = document.getElementById('editor-rect-stand');
+        this.choseGraphicObject = document.getElementById('chose-graphic-object');
+        this.creatRectStand = document.getElementById('creatRectStand');
 
+        // Создать произвольный стенд
         this.createStandButton.addEventListener('click', () => {
             this.startDrawStand = true;
+        })
+
+        // Создать стенд по готовым размерам (открывает модальное окно)
+        this.createRectStandButton.addEventListener('click', () => {
+            this.editorRectStand.style.display = "block";
+        })
+
+        // Создать стенд по заданным размерам
+        this.creatRectStand.addEventListener('click', () => {
+            this.standWidth = document.getElementById('inputStandWidth').value;
+            this.standHeight = document.getElementById('inputStandHeight').value;
+            this.stand = new standRectObject(this.stepGrid, this.standWidth, this.standHeight, this.ctx);
+            this.editorRectStand.style.display = "none";
+            this.draw();
         })
 
         this.inputSteGrid.addEventListener('input', () => {
@@ -270,12 +336,28 @@ class StandEditor {
             this.draw();
         })
 
-        this.chairButton.addEventListener('click', () => {
-            this.createObject = (x, y) => new Chair(x, y);
-        })
+
+        this.chairButtons.forEach(chairButton => {
+            chairButton.addEventListener('click', () => {
+                this.createObject = (x, y) => new Chair(x, y, chairButton.dataset.id);
+            })
+        });
+
+        // this.chairButtons.addEventListener('click', () => {
+        //     this.createObject = (x, y) => new Chair(x, y, 1);
+        //     this.loadModalObject();
+        //     this.choseGraphicObject.style.display = "flex";
+        // })
+
         this.tableButton.addEventListener('click', () => {
             this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
         })
+
+        // Создать линейку
+        this.rulerButton.addEventListener('click', () => {
+            this.rulerObject = true;
+        })
+
 
         window.onresize = () => {
             this.sizeCanvas();
@@ -284,8 +366,8 @@ class StandEditor {
 
         this.draw();
 
-        this.wall = new wallObject();
-        this.wall.draw(6, 6, this.ctx);
+        // this.wall = new wallObject();
+        // this.wall.draw(6, 6, this.ctx);
 
         console.log('Приложение запущено');
 

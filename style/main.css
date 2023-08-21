@@ -14,10 +14,12 @@ body {
 
 .editor-header {
     width: 100%;
-    background-color: rgb(68, 0, 204);
+    background-color: #ececec;
     height: 75px;
     display: flex;
     align-items: center;
+    z-index: 1000;
+    position: relative;
 }
 
 .editor-header__menu {
@@ -72,4 +74,80 @@ body {
     padding: 10px;
     border-radius: 5px;
     width: 200px;
+}
+
+#editor-rect-stand {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #ececec;
+    padding: 20px;
+    border-radius: 7px;
+}
+#editor-rect-stand h2 {
+    margin-bottom: 25px;
+}
+#editor-rect-stand .block-input {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+#editor-rect-stand .block-input input {
+    height: 30px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+#editor-rect-stand button {
+    text-align: center;
+    display: block;
+    margin: auto;
+    padding: 10px;
+    font-weight: 600;
+    background-color: #006e3e;
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+}
+#editor-rect-stand button:hover {
+    background-color: #ececec;
+    color: #000;
+    cursor: pointer;
+}
+#chose-graphic-object {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #ececec;
+    padding: 20px;
+    border-radius: 7px;
+    gap: 20px;
+    max-width: 500px;
+}
+
+#chairButtons ul {
+    display: none;
+    background-color: #ececec;
+    width: 250px;
+}
+#chairButtons ul>li>a {
+    display: flex;
+    width: 100%;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+}
+
+
+#chairButtons:hover ul {
+    display: block;
+    list-style: none;
+}
+
+#chairButtons:hover ul li {
+    width: 100%;
 }
