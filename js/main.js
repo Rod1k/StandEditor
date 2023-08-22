@@ -10,7 +10,8 @@ class StandEditor {
     graphicObjectslist = []; // Массив графических обьектов 
     createObject = null;  // Статус создания обьекта
     selectObject = null;  // Выбранный обьект
-    holdObject = null;  // Удерживаемый обьект
+    holdObject = null;  // Удерживаемый обьект (для перетаскивания)
+    rotateObject = null; // Удерживаемый обьект (для вращения)
     rulerObject = null // Выбрана ли линейка
     canvasWidth; // Ширина canvas
     canvasHeight;  // Высота canvas
@@ -20,8 +21,13 @@ class StandEditor {
     createStand = false;
     stand; // Стенд
     startStandPoint; // Начальная точка для отрисовки стенда
-    l_s_x; // Последняя координата x при рисовании стенда
-    l_s_y; // Последняя координата y при рисовании стенда
+    m_x; // Координаты мыши x
+    m_y; // Координаты мыши y
+    m_x_l; // Последняя координата мыши x
+    m_y_l; // Последняя координата мыши y
+
+    l_s_x = null; // Последняя координата x при рисовании стенда
+    l_s_y = null; // Последняя координата y при рисовании стенда
 
     standWidth; // Ширина стенда
     standHeigh; // высота стенда
@@ -151,7 +157,7 @@ class StandEditor {
                 this.ruler = new rulerObject(this.m_x, this.m_y, this.ctx);
                 console.log(this.ruler);
             }
-            
+
         }
 
         this.createObject = null;
@@ -182,6 +188,20 @@ class StandEditor {
             if (!((this.shiftDown) || (this.ctrltDown) || (this.keyZ))) {
                 this.selectObject.move(this.m_x, this.m_y);
             }
+            this.draw();
+        }
+
+        if (this.rotateObject != null) {  // Если вращается обект
+            
+            if ((this.m_x - this.m_x_l) > (this.m_y - this.m_y_l)) {
+                this.selectObject.rotate(-1);
+            }
+            if ((this.m_x - this.m_x_l) < (this.m_y - this.m_y_l)) {
+                this.selectObject.rotate(1);
+            }
+            this.m_x_l = this.m_x;
+            this.m_y_l = this.m_y;
+
             this.draw();
         }
 
@@ -218,10 +238,16 @@ class StandEditor {
         if ((this.selectObject != null) && (this.selectObject.checkChose(this.m_x, this.m_y))) {
             this.holdObject = true;
         }
+        if ((this.selectObject != null) && (this.selectObject.checkRotate(this.m_x, this.m_y))) {
+            this.m_x_l = this.m_x;
+            this.m_y_l = this.m_y;
+            this.rotateObject = true;
+        }
     }
 
     mouseUpOnCanvas() {
         this.holdObject = null;
+        this.rotateObject = null;
     }
 
     deleteObject() {

@@ -11,23 +11,33 @@ class GraphicObject {
         this.y = y - this.height / 2;
 
     }
-    // draw(ctx) {
-    //     ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
-    //     if (this.chose) {
-    //         ctx.strokeStyle = "green";
-    //         ctx.strokeRect(this.x, this.y, this.width, this.height);
-    //     }
-    // }
 
-    draw(ctx, rotate) {
+    draw(ctx) {
         ctx.save();
         ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
         ctx.rotate(this.degrees * Math.PI / 180);
         ctx.drawImage(this.img, -this.width / 2, -this.height / 2, this.width, this.height);
         ctx.restore();
         if (this.chose) {
-            ctx.strokeStyle = "green";
+            ctx.strokeStyle = "#3C00FF";
             ctx.strokeRect(this.x, this.y, this.width, this.height);
+            ctx.beginPath();// начало нового пути
+            ctx.lineWidth = 2; // толщина обводки
+            ctx.strokeStyle = "#3C00FF"; // цвет обводки
+            ctx.arc(this.x + this.width, this.y + this.height, 10, 0, Math.PI / 2, false);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.fillStyle = "#3C00FF";
+            ctx.moveTo(this.x + this.width, this.y + this.height + 7);
+            ctx.lineTo(this.x + this.width, this.y + this.height + 13);
+            ctx.lineTo(this.x + this.width - 5, this.y + this.height + 10);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.fillStyle = "#3C00FF";
+            ctx.moveTo(this.x + this.width + 7, this.y + this.height);
+            ctx.lineTo(this.x + this.width + 13, this.y + this.height);
+            ctx.lineTo(this.x + this.width + 10, this.y + this.height - 5);
+            ctx.fill();
         }
 
     }
@@ -60,6 +70,17 @@ class GraphicObject {
 
     checkChose(x, y) {
         if ((x >= this.x) && (y >= this.y) && (x <= this.width + this.x) && (y <= this.height + this.y)) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    checkRotate(x, y) {
+        if ((x >= this.x + this.width) &&
+            (y >= this.y + this.height) &&
+            (x <= this.x + this.width + 15) &&
+            (y <= this.y + this.height + 15)) {
             return true
         } else {
             return false
@@ -99,7 +120,7 @@ class Chair extends GraphicObject {
         if (type == 3) {
             this.img.src = "../media/chair3.svg";
         }
-        
+
     }
 }
 
