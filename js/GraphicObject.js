@@ -1,8 +1,11 @@
 class GraphicObject {
     x;
     y;
-    width = 50;
-    height = 50;
+    width = 50; // Границы рисуемого обьекта (ширина)
+    height = 50; // Границы рисуемого обьекта (высота)
+
+    border_width = this.width; // Границы рамки (ширина)
+    border_height = this.height; // Границы рамки (высота)
     img = new Image();
     chose = false;
     degrees = 0;
@@ -20,7 +23,7 @@ class GraphicObject {
         ctx.restore();
         if (this.chose) {
             ctx.strokeStyle = "#3C00FF";
-            ctx.strokeRect(this.x, this.y, this.width, this.height);
+            ctx.strokeRect((this.x - ((this.border_width - this.width) / 2)), (this.y - ((this.border_height - this.height) / 2)), this.border_width, this.border_height);
             ctx.beginPath();// начало нового пути
             ctx.lineWidth = 2; // толщина обводки
             ctx.strokeStyle = "#3C00FF"; // цвет обводки
@@ -56,16 +59,16 @@ class GraphicObject {
     }
 
     moveForGrid(x, y, step) {
-        this.x = Math.trunc(x / step) * step;
-        this.y = Math.trunc(y / step) * step;
+        this.x = (Math.trunc(x / step) * step) + ((this.border_width - this.width) / 2);
+        this.y = Math.trunc(y / step) * step + ((this.border_height - this.height) / 2);
     }
 
     moveForGridinStand(x, y, stand) {
         this.step = stand.stepGrid; // Ширина шага
         this.stand_x = stand.start_x; // Начальная координата x
         this.stand_y = stand.start_y; // Начальная координата y
-        this.x = (Math.trunc((x - this.stand_x) / this.step) * this.step) + this.stand_x;
-        this.y = (Math.trunc((y - this.stand_y) / this.step) * this.step) + this.stand_y;
+        this.x = (Math.trunc((x - this.stand_x) / this.step) * this.step) + this.stand_x + ((this.border_width - this.width) / 2);
+        this.y = (Math.trunc((y - this.stand_y) / this.step) * this.step) + this.stand_y + ((this.border_height - this.height) / 2);
     }
 
     checkChose(x, y) {
@@ -104,8 +107,25 @@ class GraphicObject {
 
     rotate(degrees) {
         this.degrees += degrees;
-    }
+        if (this.degrees > 360) {
+            this.degrees = this.degrees - 360;
+        }
 
+        if ((this.degrees <= 90) || (this.degrees <= 270 && this.degrees > 180)) {
+            this.rad = this.degrees / 180 * Math.PI;
+            this.border_width = ((this.width * Math.cos(this.rad)) +
+                (this.width * Math.sin(this.rad)));
+            this.border_height = ((this.height * Math.sin(this.rad)) +
+                (this.height * Math.cos(this.rad)));
+        }
+        if ((this.degrees <= 180 && this.degrees > 90) || (this.degrees <= 360 && this.degrees > 270)) {
+            this.rad = (180 - this.degrees) / 180 * Math.PI;
+            this.border_width = ((this.width * Math.cos(this.rad)) +
+                (this.width * Math.sin(this.rad)));
+            this.border_height = ((this.height * Math.sin(this.rad)) +
+                (this.height * Math.cos(this.rad)));
+        }
+    }
 }
 
 class Chair extends GraphicObject {

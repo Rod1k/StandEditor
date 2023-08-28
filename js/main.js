@@ -297,7 +297,6 @@ class StandEditor {
             if (e.code == 'KeyZ') {
                 this.keyZ = false;
             }
-
         })
 
         document.addEventListener('keydown', (e) => {
@@ -310,7 +309,6 @@ class StandEditor {
             if (e.code == 'KeyZ') {
                 this.keyZ = true;
             }
-
             if (e.code == 'ArrowLeft') {
                 if (this.selectObject != null) {
                     this.selectObject.rotate(-1);
